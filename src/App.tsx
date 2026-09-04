@@ -1,9 +1,11 @@
-import { Home } from "./pages/home";
+import { Nav } from "./components/nav";
+import { AppRoutes } from "./routes";
 
 export const App = () => {
   return (
     <div>
-      <Home />
+      <Nav />
+      <AppRoutes />
     </div>
   );
 };

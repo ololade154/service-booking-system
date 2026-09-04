@@ -1,9 +1,9 @@
-import { Nav } from "../components/nav";
+import { Hero } from "../components/hero";
 
 export const Home = () => {
   return (
     <>
-      <Nav />
+      <Hero />
     </>
   );
 };
