@@ -72,6 +72,7 @@ import { DateTime } from "luxon";
 import type { IScheduleProps } from "../data/data.types";
 import { scheduleData } from "../data/schedule.data";
 import { useBookingDetails } from "../hooks/use-storage-details";
+import { Link } from "react-router-dom";
 
 const NIGERIA_TZ = "Africa/Lagos";
 
@@ -151,6 +152,15 @@ export const InstructorSchedule = () => {
           );
         })}
       </ul>
+
+      <div className="mt-7 flex w-full max-w-3xl justify-end">
+        <Link
+          to="/bookings"
+          className="rounded-md bg-blue-700 px-6 py-2.5 text-center text-sm font-medium text-white transition-colors hover:bg-blue-800"
+        >
+          Back
+        </Link>
+      </div>
     </section>
   );
 };
