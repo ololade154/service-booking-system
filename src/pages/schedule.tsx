@@ -8,7 +8,8 @@ import { useBookingDetails } from "../hooks/use-storage-details";
  * Combines a calendar day + 12-hour time string
  * ("10:00am") into a Luxon DateTime in the given timezone.
  */
-const buildDateTimeInZone = (
+// create date and time in a particular time zone
+const createDateTimeInZone = (
   day: string,
   time: string,
   zone: string,
@@ -28,14 +29,13 @@ const convertScheduleEntry = (
   { day, startTime, endTime, timeZone }: IScheduleProps,
   targetTimeZone: string,
 ) => {
-  const start = buildDateTimeInZone(day, startTime, timeZone).setZone(
+  //convert the start time to the user selected time
+  const start = createDateTimeInZone(day, startTime, timeZone).setZone(
     targetTimeZone,
   );
-
-  const end = buildDateTimeInZone(day, endTime, timeZone).setZone(
+  const end = createDateTimeInZone(day, endTime, timeZone).setZone(
     targetTimeZone,
   );
-
   return {
     day: start.toFormat("cccc").toLowerCase(),
     date: start.toJSDate(),
