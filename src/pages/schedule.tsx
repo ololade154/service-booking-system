@@ -1,41 +1,22 @@
 import { DateTime } from "luxon";
-
 import type { IScheduleProps } from "../data/data.types";
 import { scheduleData } from "../data/schedule.data";
 import { useBookingDetails } from "../hooks/use-storage-details";
 
-/**
- * Combines a calendar day + 12-hour time string
- * ("10:00am") into a Luxon DateTime in the given timezone.
- */
-// create date and time in a particular time zone
-const createDateTimeInZone = (
-  day: string,
-  time: string,
-  zone: string,
-): DateTime => {
-  const result = DateTime.fromFormat(`${day} ${time}`, "cccc h:mma", {
-    zone,
-  });
-
-  return result;
-};
-
-/**
- * Converts one schedule entry from the instructor's timezone
- * into the user's selected timezone.
- */
 const convertScheduleEntry = (
   { day, startTime, endTime, timeZone }: IScheduleProps,
   targetTimeZone: string,
 ) => {
-  //convert the start time to the user selected time
-  const start = createDateTimeInZone(day, startTime, timeZone).setZone(
-    targetTimeZone,
-  );
-  const end = createDateTimeInZone(day, endTime, timeZone).setZone(
-    targetTimeZone,
-  );
+  // Create the start time in the instructor's timezone
+  const start = DateTime.fromFormat(`${day} ${startTime}`, "cccc h:mma", {
+    zone: timeZone,
+  }).setZone(targetTimeZone);
+
+  // Create the end time in the instructor's timezone
+  const end = DateTime.fromFormat(`${day} ${endTime}`, "cccc h:mma", {
+    zone: timeZone,
+  }).setZone(targetTimeZone);
+
   return {
     day: start.toFormat("cccc").toLowerCase(),
     date: start.toJSDate(),
@@ -44,9 +25,6 @@ const convertScheduleEntry = (
   };
 };
 
-/**
- * Converts the entire weekly schedule into the user's timezone.
- */
 const convertScheduleToTimeZone = (
   schedule: IScheduleProps[],
   targetTimeZone: string,
@@ -57,16 +35,17 @@ const convertScheduleToTimeZone = (
 export const InstructorSchedule = () => {
   const { booking } = useBookingDetails();
 
-  // Use the timezone selected by the user.
-  // Fall back to Lagos if no timezone has been selected.
+  // User's selected timezone
+  // If no timezone has been selected, use Lagos
   const targetTimeZone = booking.timeZone || "Africa/Lagos";
 
+  // Convert the instructor's schedule to the user's timezone
   const convertedSchedule = convertScheduleToTimeZone(
     scheduleData,
     targetTimeZone,
   );
 
-  // Get today's day based on the user's selected timezone.
+  // Get today's day in the user's selected timezone
   const today = DateTime.now()
     .setZone(targetTimeZone)
     .toFormat("cccc")
