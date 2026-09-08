@@ -1,4 +1,6 @@
 export interface IScheduleProps {
   day: string;
-  time: string;
+  startTime: string;
+  endTime: string;
+  timeZone: string;
 }

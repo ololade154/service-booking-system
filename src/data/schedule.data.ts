@@ -3,22 +3,32 @@ import type { IScheduleProps } from "./data.types";
 export const scheduleData: IScheduleProps[] = [
   {
     day: "monday",
-    time: "10:00 am -12:00pm",
+    startTime: "10:00am",
+    endTime: "12:00pm",
+    timeZone: "Africa/Lagos",
   },
   {
     day: "tuesday",
-    time: "11:00 am -12:00pm",
+    startTime: "1:00pm",
+    endTime: "3:00pm",
+    timeZone: "Africa/Lagos",
   },
   {
     day: "wednesday",
-    time: "12:00 pm -2:00pm",
+    startTime: "3:00am",
+    endTime: "5:00am",
+    timeZone: "Africa/Lagos",
   },
   {
     day: "thursday",
-    time: "9:00 am -11:00am",
+    startTime: "10:00am",
+    endTime: "12:00pm",
+    timeZone: "Africa/Lagos",
   },
   {
     day: "friday",
-    time: "10:00 am -12:00pm",
+    startTime: "10:00am",
+    endTime: "1:00pm",
+    timeZone: "Africa/Lagos",
   },
 ];

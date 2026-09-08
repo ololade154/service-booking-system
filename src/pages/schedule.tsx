@@ -1,105 +1,76 @@
-// import { useState } from "react";
-// import { DateTime } from "luxon";
-
-// import type { IScheduleProps } from "../data/data.types";
-// import { scheduleData } from "../data/schedule.data";
-// import { useBookingDetails } from "../hooks/use-storage-details";
-
-// const formatTimeRange = (time: string) => {
-//   const [start, end] = time
-//     .toLowerCase()
-//     .replace(/\s+/g, "")
-//     .split("-")
-//     .map((part) =>
-//       part
-//         .replace(/(am|pm)/, " $1")
-//         .trim()
-//         .toUpperCase(),
-//     );
-//   return `${start} – ${end}`;
-// };
-
-// export const InstructorSchedule = () => {
-//   const booking = useBookingDetails();
-//   const [currentDateTime] = useState<DateTime>(DateTime.now());
-//   const today = currentDateTime.weekdayLong?.toLowerCase();
-//   if (booking.country && booking.date === currentDateTime) {
-//     return <p>Booking slot is available</p>;
-//   } else {
-//     <p>No booking slot</p>;
-//   }
-//   return (
-//     <section className="mx-auto mt-16 w-full max-w-md">
-//       <header className="mb-8 space-y-1 text-center">
-//         <h1 className="font-serif text-3xl font-semibold text-stone-900">
-//           Instructor Schedule
-//         </h1>
-//         <p className="text-base text-stone-500">Weekly availability (WAT)</p>
-//       </header>
-
-//       <ul className="divide-y divide-stone-200 border-y border-stone-200">
-//         {scheduleData.map(({ day, time }: IScheduleProps) => {
-//           const isToday = day === today;
-//           return (
-//             <li
-//               key={day}
-//               className={`flex items-center justify-between border-l-4 py-4 pl-4 pr-2 ${
-//                 isToday
-//                   ? "border-emerald-800 bg-emerald-50"
-//                   : "border-transparent"
-//               }`}
-//             >
-//               <span className="font-medium capitalize text-stone-800">
-//                 {day}
-//                 {isToday && (
-//                   <span className="ml-2 text-xs font-normal text-emerald-700">
-//                     Today
-//                   </span>
-//                 )}
-//               </span>
-//               <span className="tabular-nums text-stone-600">
-//                 {formatTimeRange(time)}
-//               </span>
-//             </li>
-//           );
-//         })}
-//       </ul>
-//     </section>
-//   );
-// };
 import { DateTime } from "luxon";
 
 import type { IScheduleProps } from "../data/data.types";
 import { scheduleData } from "../data/schedule.data";
 import { useBookingDetails } from "../hooks/use-storage-details";
-import { Link } from "react-router-dom";
 
-const NIGERIA_TZ = "Africa/Lagos";
+/**
+ * Combines a calendar day + 12-hour time string
+ * ("10:00am") into a Luxon DateTime in the given timezone.
+ */
+const buildDateTimeInZone = (
+  day: string,
+  time: string,
+  zone: string,
+): DateTime => {
+  const result = DateTime.fromFormat(`${day} ${time}`, "cccc h:mma", {
+    zone,
+  });
 
-const formatTimeRange = (time: string) => {
-  const [start, end] = time
-    .toLowerCase()
-    .replace(/\s+/g, "")
-    .split("-")
-    .map((part) =>
-      part
-        .replace(/(am|pm)/, " $1")
-        .trim()
-        .toUpperCase(),
-    );
-  return `${start} – ${end}`;
+  return result;
+};
+
+/**
+ * Converts one schedule entry from the instructor's timezone
+ * into the user's selected timezone.
+ */
+const convertScheduleEntry = (
+  { day, startTime, endTime, timeZone }: IScheduleProps,
+  targetTimeZone: string,
+) => {
+  const start = buildDateTimeInZone(day, startTime, timeZone).setZone(
+    targetTimeZone,
+  );
+
+  const end = buildDateTimeInZone(day, endTime, timeZone).setZone(
+    targetTimeZone,
+  );
+
+  return {
+    day: start.toFormat("cccc").toLowerCase(),
+    date: start.toJSDate(),
+    startTime: start.toFormat("h:mma").toLowerCase(),
+    endTime: end.toFormat("h:mma").toLowerCase(),
+  };
+};
+
+/**
+ * Converts the entire weekly schedule into the user's timezone.
+ */
+const convertScheduleToTimeZone = (
+  schedule: IScheduleProps[],
+  targetTimeZone: string,
+) => {
+  return schedule.map((entry) => convertScheduleEntry(entry, targetTimeZone));
 };
 
 export const InstructorSchedule = () => {
-  const booking = useBookingDetails();
-  const today = DateTime.now().setZone(NIGERIA_TZ).weekdayLong?.toLowerCase();
+  const { booking } = useBookingDetails();
 
-  // Turn the saved booking date string back into a weekday name, e.g. "tuesday"
-  const bookedDay = booking.date
-    ? DateTime.fromISO(booking.date).weekdayLong?.toLowerCase()
-    : null;
+  // Use the timezone selected by the user.
+  // Fall back to Lagos if no timezone has been selected.
+  const targetTimeZone = booking.timeZone || "Africa/Lagos";
 
-  const hasBooking = Boolean(booking.country && bookedDay);
+  const convertedSchedule = convertScheduleToTimeZone(
+    scheduleData,
+    targetTimeZone,
+  );
+
+  // Get today's day based on the user's selected timezone.
+  const today = DateTime.now()
+    .setZone(targetTimeZone)
+    .toFormat("cccc")
+    .toLowerCase();
 
   return (
     <section className="mx-auto mt-16 w-full max-w-md">
@@ -107,60 +78,42 @@ export const InstructorSchedule = () => {
         <h1 className="font-serif text-3xl font-semibold text-stone-900">
           Instructor Schedule
         </h1>
-        <p className="text-base text-stone-500">Weekly availability (WAT)</p>
-        {hasBooking ? (
-          <p className="pt-2 text-sm text-emerald-700">
-            Booking slot is available
-          </p>
-        ) : (
-          <p className="pt-2 text-sm text-stone-400">No booking slot</p>
-        )}
+
+        <p className="text-base text-stone-500">
+          Weekly availability ({targetTimeZone})
+        </p>
       </header>
 
       <ul className="divide-y divide-stone-200 border-y border-stone-200">
-        {scheduleData.map(({ day, time }: IScheduleProps) => {
+        {convertedSchedule.map(({ day, startTime, endTime }, index) => {
           const isToday = day === today;
-          const isBooked = day === bookedDay;
+
           return (
             <li
-              key={day}
+              key={index}
               className={`flex items-center justify-between border-l-4 py-4 pl-4 pr-2 ${
-                isBooked
-                  ? "border-blue-700 bg-blue-50"
-                  : isToday
-                    ? "border-emerald-800 bg-emerald-50"
-                    : "border-transparent"
+                isToday
+                  ? "border-emerald-800 bg-emerald-50"
+                  : "border-transparent"
               }`}
             >
               <span className="font-medium capitalize text-stone-800">
                 {day}
-                {isBooked && (
-                  <span className="ml-2 text-xs font-normal text-blue-700">
-                    Booked
-                  </span>
-                )}
-                {isToday && !isBooked && (
+
+                {isToday && (
                   <span className="ml-2 text-xs font-normal text-emerald-700">
                     Today
                   </span>
                 )}
               </span>
+
               <span className="tabular-nums text-stone-600">
-                {formatTimeRange(time)}
+                {startTime} - {endTime}
               </span>
             </li>
           );
         })}
       </ul>
-
-      <div className="mt-7 flex w-full max-w-3xl justify-end">
-        <Link
-          to="/bookings"
-          className="rounded-md bg-blue-700 px-6 py-2.5 text-center text-sm font-medium text-white transition-colors hover:bg-blue-800"
-        >
-          Back
-        </Link>
-      </div>
     </section>
   );
 };
