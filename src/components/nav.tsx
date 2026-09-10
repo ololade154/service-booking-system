@@ -2,9 +2,8 @@ import { Link, NavLink } from "react-router-dom";
 import type { LinkProps } from "./nav.type";
 const navLinks: LinkProps[] = [
   { label: "Bookings", to: "/bookings" },
-  { label: "About", to: "#" },
-  { label: "Contact", to: "#" },
-  { label: "Profile", to: "#" },
+  { label: "Schedule", to: "/instructor-schedule" },
+  { label: "Confirmation", to: "/confirmation-page" },
 ];
 
 export const Nav = () => {
@@ -15,7 +14,7 @@ export const Nav = () => {
       <NavLink to="/" className="font-bold text-[20px] italic">
         Shokemi
       </NavLink>
-      <nav className="flex items-centre gap-12 text-[15px] font-medium">
+      <nav className="flex items-centre gap-10 text-[15px] font-medium">
         {navLinks.map((link) => {
           return (
             <Link to={link.to} key={link.label}>

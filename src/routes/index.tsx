@@ -1,8 +1,8 @@
 import { Routes, Route } from "react-router-dom";
-
 import { Home } from "../pages/home";
 import { Booking } from "../pages/booking";
 import { InstructorSchedule } from "../pages/schedule";
+import { ConfirmationPage } from "../pages/comfirmationPage";
 
 export const AppRoutes = () => {
   return (
@@ -10,6 +10,7 @@ export const AppRoutes = () => {
       <Route path="/" element={<Home />} />
       <Route path="/bookings" element={<Booking />} />
       <Route path="/instructor-schedule" element={<InstructorSchedule />} />
+      <Route path="/confirmation-page" element={<ConfirmationPage />} />
     </Routes>
   );
 };

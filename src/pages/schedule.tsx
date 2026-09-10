@@ -73,8 +73,8 @@ export const InstructorSchedule = () => {
     setErrorMessage(null);
     // continue with booking logic here
   };
-  // Check if the currently selected slot has an error
-  const isSelectionInvalid = selectedIndex !== null && errorMessage;
+  // Check if no day is selected or the selected slot has an error
+  const isSelectionInvalid = selectedIndex === null || !!errorMessage;
 
   return (
     <section className="mx-auto mt-16 w-full max-w-md">
@@ -139,7 +139,7 @@ export const InstructorSchedule = () => {
 
       <div className="mt-7 flex w-full items-center">
         <Link
-          to="/bookings"
+          to="/confirmation-page"
           onClick={(e) => {
             if (isSelectionInvalid) {
               e.preventDefault();
