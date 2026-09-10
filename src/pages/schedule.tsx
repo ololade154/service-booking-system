@@ -1,55 +1,80 @@
+import { useState } from "react";
 import { DateTime } from "luxon";
 import type { IScheduleProps } from "../data/data.types";
 import { scheduleData } from "../data/schedule.data";
 import { useBookingDetails } from "../hooks/use-storage-details";
-
-const convertScheduleEntry = (
-  { day, startTime, endTime, timeZone }: IScheduleProps,
-  targetTimeZone: string,
-) => {
-  // Create the start time in the instructor's timezone
-  const start = DateTime.fromFormat(`${day} ${startTime}`, "cccc h:mma", {
-    zone: timeZone,
-  }).setZone(targetTimeZone);
-
-  // Create the end time in the instructor's timezone
-  const end = DateTime.fromFormat(`${day} ${endTime}`, "cccc h:mma", {
-    zone: timeZone,
-  }).setZone(targetTimeZone);
-
-  return {
-    day: start.toFormat("cccc").toLowerCase(),
-    date: start.toJSDate(),
-    startTime: start.toFormat("h:mma").toLowerCase(),
-    endTime: end.toFormat("h:mma").toLowerCase(),
-  };
-};
-
-const convertScheduleToTimeZone = (
-  schedule: IScheduleProps[],
-  targetTimeZone: string,
-) => {
-  return schedule.map((entry) => convertScheduleEntry(entry, targetTimeZone));
-};
+import { Link } from "react-router-dom";
 
 export const InstructorSchedule = () => {
   const { booking } = useBookingDetails();
-
-  // User's selected timezone
-  // If no timezone has been selected, use Lagos
   const targetTimeZone = booking.timeZone || "Africa/Lagos";
 
-  // Convert the instructor's schedule to the user's timezone
-  const convertedSchedule = convertScheduleToTimeZone(
-    scheduleData,
-    targetTimeZone,
-  );
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
-  // Get today's day in the user's selected timezone
-  const today = DateTime.now()
-    .setZone(targetTimeZone)
-    .toFormat("cccc")
-    .toLowerCase();
+  //to convert each of the schedule day, including the day, the time and the timezone
+  const convertEachScheduleDay = ({
+    day,
+    startTime,
+    endTime,
+    timeZone,
+  }: IScheduleProps) => {
+    // Instructor's own local time (not converted)
+    const instructorStart = DateTime.fromFormat(
+      `${day} ${startTime}`,
+      "cccc h:mma",
+      { zone: timeZone },
+    );
+    const instructorEnd = DateTime.fromFormat(
+      `${day} ${endTime}`,
+      "cccc h:mma",
+      { zone: timeZone },
+    );
+    // Converting the instructor's scheduled start time to the user's timezone
+    const start = instructorStart.setZone(targetTimeZone);
+    // Converting the instructor's scheduled end time to the user's timezone
+    const end = instructorEnd.setZone(targetTimeZone);
+    return {
+      day: start.toFormat("cccc").toLowerCase(),
+      startDateTime: start,
+      endDateTime: end,
+      instructorTimeZone: timeZone,
+      startTime: start.toFormat("h:mma").toLowerCase(),
+      endTime: end.toFormat("h:mma").toLowerCase(),
+    };
+  };
+
+  const convertAllScheduleDay = () => {
+    return scheduleData.map((data) => convertEachScheduleDay(data));
+  };
+
+  const handleSelectSlot = (
+    endDateTime: DateTime,
+    day: string,
+    startTime: string,
+    endTime: string,
+    instructorTimeZone: string,
+    index: number,
+  ) => {
+    // Always highlight the clicked row, whether it's valid or not.
+    setSelectedIndex(index);
+    //converting the instructor current time zone
+    const instructorNow = DateTime.now().setZone(instructorTimeZone);
+    //converting the instructor schedule day end time
+    const instructorEndTime = endDateTime.setZone(instructorTimeZone);
+    //comparing the instructor current time with the set scheduled time
+    if (instructorNow > instructorEndTime) {
+      setErrorMessage(
+        `The ${day} slot (${startTime} - ${endTime}) has already ended `,
+      );
+      return;
+    }
+
+    setErrorMessage(null);
+    // continue with booking logic here
+  };
+  // Check if the currently selected slot has an error
+  const isSelectionInvalid = selectedIndex !== null && errorMessage;
 
   return (
     <section className="mx-auto mt-16 w-full max-w-md">
@@ -63,36 +88,68 @@ export const InstructorSchedule = () => {
         </p>
       </header>
 
+      {errorMessage && (
+        <p className="mb-4 rounded-md bg-red-50 px-4 py-2 text-center text-sm text-red-700">
+          {errorMessage}
+        </p>
+      )}
+
       <ul className="divide-y divide-stone-200 border-y border-stone-200">
-        {convertedSchedule.map(({ day, startTime, endTime }, index) => {
-          const isToday = day === today;
+        {convertAllScheduleDay().map(
+          (
+            { day, startTime, endTime, endDateTime, instructorTimeZone },
+            index,
+          ) => {
+            const isSelected = index === selectedIndex;
+            const isSelectedWithError = isSelected && errorMessage;
 
-          return (
-            <li
-              key={index}
-              className={`flex items-center justify-between border-l-4 py-4 pl-4 pr-2 ${
-                isToday
-                  ? "border-emerald-800 bg-emerald-50"
-                  : "border-transparent"
-              }`}
-            >
-              <span className="font-medium capitalize text-stone-800">
-                {day}
+            return (
+              <li
+                key={index}
+                onClick={() =>
+                  handleSelectSlot(
+                    endDateTime,
+                    day,
+                    startTime,
+                    endTime,
+                    instructorTimeZone,
+                    index,
+                  )
+                }
+                className={`flex cursor-pointer items-center justify-between border-l-4 py-4 pl-4 pr-2 ${
+                  isSelectedWithError
+                    ? "border-red-700 bg-red-50"
+                    : isSelected
+                      ? "border-emerald-800 bg-emerald-50"
+                      : "border-transparent"
+                }`}
+              >
+                <span className="font-medium capitalize text-stone-800">
+                  {day}
+                </span>
 
-                {isToday && (
-                  <span className="ml-2 text-xs font-normal text-emerald-700">
-                    Today
-                  </span>
-                )}
-              </span>
-
-              <span className="tabular-nums text-stone-600">
-                {startTime} - {endTime}
-              </span>
-            </li>
-          );
-        })}
+                <span className="tabular-nums text-stone-600">
+                  {startTime} - {endTime}
+                </span>
+              </li>
+            );
+          },
+        )}
       </ul>
+
+      <div className="mt-7 flex w-full items-center">
+        <Link
+          to="/bookings"
+          onClick={(e) => {
+            if (isSelectionInvalid) {
+              e.preventDefault();
+            }
+          }}
+          className="flex w-full items-center justify-center rounded-lg bg-blue-700 px-6 py-3 text-center text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2 active:scale-[0.98]"
+        >
+          Next
+        </Link>
+      </div>
     </section>
   );
 };
