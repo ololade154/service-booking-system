@@ -3,7 +3,6 @@ import type { LinkProps } from "./nav.type";
 const navLinks: LinkProps[] = [
   { label: "Bookings", to: "/bookings" },
   { label: "Schedule", to: "/instructor-schedule" },
-  { label: "Confirmation", to: "/confirmation-page" },
 ];
 
 export const Nav = () => {
