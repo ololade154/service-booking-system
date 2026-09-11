@@ -40,7 +40,7 @@ export const Nav = () => {
 
       {/* mobile view */}
       <div className="overflow-x-hidden">
-        <header className="flex lg:hidden justify-between items-center bg-blue-700 text-white sticky top-0 left-0 right-0 w-full h-20 px-6 z-10">
+        <header className="flex lg:hidden justify-between items-center bg-blue-700 text-white sticky top-0 left-0 right-0 w-full h-18 px-6 z-10">
           {/* logo */}
           <NavLink to="/" className="font-bold text-xl italic tracking-wide">
             Shokemi
