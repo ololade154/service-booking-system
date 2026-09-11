@@ -27,8 +27,8 @@ export const scheduleData: IScheduleProps[] = [
   },
   {
     day: "friday",
-    startTime: "10:00am",
-    endTime: "1:00pm",
+    startTime: "5:00pm",
+    endTime: "7:00pm",
     timeZone: "Africa/Lagos",
   },
 ];

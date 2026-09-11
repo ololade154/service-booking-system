@@ -77,13 +77,13 @@ export const InstructorSchedule = () => {
   const isSelectionInvalid = selectedIndex === null || !!errorMessage;
 
   return (
-    <section className="mx-auto mt-16 w-full max-w-md">
-      <header className="mb-8 space-y-1 text-center">
-        <h1 className="font-serif text-3xl font-semibold text-stone-900">
+    <section className="mx-auto mt-10 w-full max-w-md px-4 sm:mt-16 sm:px-6">
+      <header className="mb-6 space-y-1 text-center sm:mb-8">
+        <h1 className="font-serif text-2xl font-semibold text-stone-900 sm:text-3xl">
           Instructor Schedule
         </h1>
 
-        <p className="text-base text-stone-500">
+        <p className="text-sm text-stone-500 sm:text-base">
           Weekly availability ({targetTimeZone})
         </p>
       </header>
@@ -116,7 +116,7 @@ export const InstructorSchedule = () => {
                     index,
                   )
                 }
-                className={`flex cursor-pointer items-center justify-between border-l-4 py-4 pl-4 pr-2 ${
+                className={`flex cursor-pointer flex-wrap items-center justify-between gap-y-1 border-l-4 py-4 pl-3 pr-2 sm:flex-nowrap sm:pl-4 ${
                   isSelectedWithError
                     ? "border-red-700 bg-red-50"
                     : isSelected
@@ -128,7 +128,7 @@ export const InstructorSchedule = () => {
                   {day}
                 </span>
 
-                <span className="tabular-nums text-stone-600">
+                <span className="tabular-nums text-sm text-stone-600 sm:text-base">
                   {startTime} - {endTime}
                 </span>
               </li>
@@ -137,7 +137,7 @@ export const InstructorSchedule = () => {
         )}
       </ul>
 
-      <div className="mt-7 flex w-full items-center">
+      <div className="mt-6 flex w-full items-center sm:mt-7">
         <Link
           to="/confirmation-page"
           onClick={(e) => {
@@ -145,7 +145,7 @@ export const InstructorSchedule = () => {
               e.preventDefault();
             }
           }}
-          className="flex w-full items-center justify-center rounded-lg bg-blue-700 px-6 py-3 text-center text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2 active:scale-[0.98]"
+          className="flex w-full items-center justify-center rounded-lg bg-blue-700 px-6 py-3.5 text-center text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2 active:scale-[0.98] sm:py-3"
         >
           Next
         </Link>

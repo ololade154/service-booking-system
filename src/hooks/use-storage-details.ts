@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-
 const STORAGE_KEY = "booking-details";
 
 interface BookingDetails {
